@@ -28,11 +28,18 @@ Built in ten sequential stages. Each stage lands as complete, runnable code.
 
 ```bash
 ./scripts/build_app.sh --run     # release build, bundle as .app, launch
-./scripts/build_app.sh --debug   # debug build only
-swift build                      # bare executable, no bundle
+./scripts/build_app.sh --debug   # unoptimised build with debug symbols
+./scripts/build_app.sh --spm     # build through SwiftPM instead of swiftc
 ```
 
-`build_app.sh` wraps the SwiftPM product in a real `.app` bundle. That bundle is not
+`build_app.sh` compiles the sources **directly with `swiftc`** and wraps the result
+in a real `.app` bundle. ClickyClo has no external dependencies, so SwiftPM adds
+nothing at build time — and a partially-installed Command Line Tools ships a
+`PackageDescription` library that fails to link, which breaks `swift build` before
+it ever reaches our code (`Invalid manifest ... Undefined symbols:
+PackageDescription.Package.__allocating_init`). Compiling directly sidesteps that
+entirely. `Package.swift` is kept for Xcode and healthy SwiftPM toolchains; use
+`--spm` to go through it. That bundle is not
 cosmetic: `Info.plist` carries `LSUIElement` (no Dock tile, no Cmd-Tab entry, never
 steals focus) and, from Stage 3 onward, the TCC usage strings behind the Screen
 Recording and Microphone prompts.
